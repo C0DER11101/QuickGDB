@@ -47,8 +47,6 @@ $ g++ -g main1.cpp -o main1
 
 The $-g$ flag is used to produce debugging information in the operating system's native format. GDB can work with this debugging information.
 
-Watch \href{https://www.youtube.com/watch?v=svG6OPyKsrw}{this video}.
-
 \section{Using GDB}
 \paragraph{Running a program in GDB}
 To run a program in GDB, use the $gdb$ command and the name of the program.
@@ -752,4 +750,11 @@ Now, we will set the value of \textbf{x} to a different value.
 \end{figure}
 
 From the figure above, we can see that the execution stopped at the line \textbf{mystery(x, 1);}. This function basically increments \textbf{x} by $1$. So before this line got executed we set the value of \textbf{x} to $15$. Then when we used the \textbf{continue} command and hence we get the output.
+
+\newpage
+\section{Sources}
+\subsection{Youtube Videos}
+\begin{itemize}
+\item GDB tutorial: \url{https://www.youtube.com/watch?v=svG6OPyKsrw}
+\end{itemize}
 \end{document}
