@@ -1,0 +1,755 @@
+\documentclass{article}
+\usepackage{fancyvrb}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+\hypersetup{
+	colorlinks=true,     % this means that links are going to be colored
+	linkcolor=red,       % a link in hyperref is an internal link within the document
+	urlcolor=blue        % urls are external links like link to a youtube video/channel, or github, etc....
+}
+
+\makeatletter
+
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}{-3.25ex \@plus -1ex \@minus -.2ex}{1.5ex \@plus .2ex}{\normalfont\normalsize\bfseries}}
+
+\makeatother
+
+\begin{document}
+\section{GNU Debugger(GDB)}\label{sec:GDB}
+\paragraph{What it is}
+GDB is a powerful debugging tool for C(and also for other languages like C++). It helps us to poke around inside our C programs while they are executing and also allows us to see what exactly happens when our program crashes.
+
+Below is a C++ program:
+
+\begin{Verbatim}[numbers=left, frame=single]
+#include<iostream>
+
+using namespace std;
+
+int main(void) {
+	int i=10, j;
+	
+	j=i*10;
+	i+=20;
+	
+	cout<<"Hello world\n";
+	
+	return 0;
+}
+\end{Verbatim}
+
+We will compile the program:
+
+\begin{Verbatim}[frame=single]
+$ g++ -g main1.cpp -o main1
+\end{Verbatim}
+
+The $-g$ flag is used to produce debugging information in the operating system's native format. GDB can work with this debugging information.
+
+Watch \href{https://www.youtube.com/watch?v=svG6OPyKsrw}{this video}.
+
+\section{Using GDB}
+\paragraph{Running a program in GDB}
+To run a program in GDB, use the $gdb$ command and the name of the program.
+\begin{Verbatim}[frame=single]
+$ gdb .\main1.exe
+\end{Verbatim}
+
+\newpage
+When this command will be executed then we will get the following output:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{ss1.png}
+\caption{Output of \textbf{gdb .$\backslash$main.exe}}
+\end{figure}
+
+We can see that a prompt appears at the bottom(as \textbf{(gdb)}).
+We can type in commands in that prompt.
+
+\newpage
+\subsection{The \textit{run} command}
+\paragraph{}
+We will use the \textbf{run} command to run our program(\textbf{main1.cpp}).
+
+This will give us the following output:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.80\textwidth]{ss2.png}
+\caption{Output of the \textbf{run} command}
+\end{figure}
+
+We can see that "Hello world" has been printed.
+
+\subsection{The \textit{break} command}
+\paragraph{}
+This command is used to set \underline{breakpoints} in our program.
+Breakpoints are specific points in our code where the debugger will temporarily halt program execution. This allows us to inspect the program's state.
+
+This is how we use the \textit{break} command, just use the $break$ command along with the line number, a function name or a \textit{file:line} combination where we want to set the breakpoint.
+
+\begin{Verbatim}[frame=single]
+(gdb) break main
+\end{Verbatim}
+
+Here, we are providing the function name \textbf{main} as the breakpoint.
+
+\newpage
+We get the following output:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.80\textwidth]{ss3.png}
+\caption{Setting the breakpoint at the first line of main's body}
+\end{figure}
+
+Now, we will again use the \textbf{run} command.
+
+So, after using the \textbf{run} command, this is the output:
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.80\textwidth]{ss4.png}
+\caption{Execution stops at the first line of main's body}
+\end{figure}
+
+\newpage
+\subsection{The \textit{next} command}
+\paragraph{}
+This command is used to execute the program until the next source line in the current function is reached. If the current line contains a function call, then the \textbf{next} command will execute the entire function and stop at the first source line after the function call returns.
+
+Now, if we type next:
+
+\begin{Verbatim}[frame=single]
+(gdb) next
+\end{Verbatim}
+This, basically, will print the next line after executing the $6^{th}$(this $6^{th}$ line is where the last execution stopped) and will stop after printing this line(the line after the $6^{th}$ line).
+Here is the output:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{ss5.png}
+\caption{Output of \textbf{next} command}
+\end{figure}
+
+Here, we can see that the next source line after line $6$ is $8$. So, \textbf{next} stops at line $8$ after executing line $6$.
+
+\newpage
+\subsection{The \textit{list} command}
+\paragraph{}
+This command is used to display the source code around the current line of execution.
+\begin{itemize}
+\item If a function name is provided as an argument, it shows the source code for that function.
+\item If no argument is provided, it shows the source code around the current program counter.
+\end{itemize}
+
+We can also provide line numbers or ranges as arguments to the \textbf{list} command to view specific parts of the code.
+Example:
+\begin{Verbatim}[frame=single]
+(gbd) list 20
+\end{Verbatim}
+
+This command shows the source code starting from line $20$.
+
+\begin{Verbatim}[frame=single]
+(gbd) list 30, 40
+\end{Verbatim}
+
+This command shows the source code from line $30$ to line $40$.
+
+\begin{Verbatim}[frame=single]
+(gbd) list function.c:50, function.c:60
+\end{Verbatim}
+
+This command shows the source code from line $50$ to line $60$ in \textbf{function.c}.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{ss6.png}
+\caption{Output of \textbf{list} command}
+\vspace{10pt}
+We can see that the \textbf{list} command shows us the lines before and the lines after line $8$(which was the line till where the execution last stopped).
+\end{figure}
+
+\newpage
+\subsection{The \textit{print} command}
+\paragraph{}
+This command is used to evaluate and print the value of expressions or variables during program debugging.
+
+Now, we have a variable named \textbf{j} in our program.
+
+If we write:
+\begin{Verbatim}[frame=single]
+(gdb) print j
+\end{Verbatim}
+
+this will basically print $0$ because when we used \textbf{next} command it basically executed the line \textbf{int i=10, j;} in the program and it stopped at the line \textbf{j=i*10;} that means this line is not executed and therefore $j$ is not initialized yet.
+
+But:
+\begin{Verbatim}[frame=single]
+(gdb) print i
+\end{Verbatim}
+This will print $10$.
+Here is the output:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.2\textwidth]{ss7.png}
+\caption{Output of \textbf{(gdb) print i}}
+\end{figure}
+
+Now we use the \textbf{next} command again which gives us the following output:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.3\textwidth]{ss8.png}
+\caption{The \textbf{next} command}
+\end{figure}
+
+Here, we executed line $8$ and after executing this line \textbf{next} stops at line $9$(i.e this is the next line to be executed). Notice that after executing line $8$, we used the \textbf{print} command to print the value of $j$ which is $100$ after the multiplication operator.
+
+The \textbf{print} command can also work with the pointer dereferencing operator(*). Say, we have a pointer in our program and we want to see to which address this pointer is pointing to, then we just need to write:
+\begin{Verbatim}[frame=single]
+(gdb) print *ptr
+\end{Verbatim}
+
+We can also look at the memory address of a variable using the \textbf{print} command as shown below:
+
+\begin{Verbatim}[frame=single]
+(gdb) print &j
+\end{Verbatim}
+This prints the memory address of $j$.
+\newpage
+\section{More}
+\paragraph{}
+Consider the following program:
+\begin{Verbatim}[numbers=left, frame=single]
+#include "blackBox.h"
+
+using namespace std;
+
+void crash(int *i) {
+        *i=1;
+}
+
+void f(int *i) {
+        int *j=i;
+
+        sophisticated(j);
+        j=complicated(j);
+
+        crash(j);
+}
+
+int main(void) {
+        int i;
+
+        f(&i);
+
+        return 0;
+}
+\end{Verbatim}
+Here are the function definitions of \textbf{sophisticated()} and \textbf{complicated()}:
+\begin{Verbatim}[frame=single]
+void sophisticated(int *j) {
+        *j=10;
+}
+
+int* complicated(int *j) {
+        return NULL;
+}
+\end{Verbatim}
+
+\newpage
+So, this program throws a \textbf{Segmentation fault}:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{ss9.png}
+\caption{Our beloved \textbf{Segmentation fault}}
+\end{figure}
+
+\textit{I had to switch to WSL2 as running this program on Windows wasn't showing the SegFault!}
+
+\subsection{Debugging the program}
+\paragraph{}
+Start gdb:
+
+\begin{Verbatim}[frame=single]
+$ gdb ./main2
+\end{Verbatim}
+
+Set a breakpoint, for me, I followed the tutorial and provided the breakpoint as follows:
+\begin{Verbatim}[frame=single]
+(gdb) break crash
+\end{Verbatim}
+
+Now, we run our program:
+\begin{Verbatim}[frame=single]
+(gdb) run
+\end{Verbatim}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{ss10.png}
+\caption{Notice \textbf{i's} value}
+\end{figure}
+
+\newpage
+So, our execution stops at line $6$ i.e \textbf{*i=1;}. This line is not executed. Notice the value of \textbf{i}. \textbf{i} is a pointer to an integer and the address in it is $0x0$ which indicates that $i$ stores the \textbf{NULL} value.
+
+\subsection{The \textit{up} and \textit{down} commands}
+\paragraph{}
+\begin{itemize}
+\item \textit{up} $\rightarrow$ used to move up the call stack to the calling function.
+\item \textit{down} $\rightarrow$ used to move down the call stack to the called function.
+\end{itemize}
+
+Here is what \textit{up} gives us:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{ss11.png}
+\caption{The \textit{up} command}
+\end{figure}
+
+It is basically showing us the functions which are calling \textbf{crash()}, \textbf{f()} respectively.
+
+Here is what \textit{down} gives us:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{ss12.png}
+\caption{The \textit{down} command}
+\end{figure}
+
+We can see that \textit{down} is basically showing us the lines where \textbf{crash()} and \textbf{f()} are called.
+
+\newpage
+\subsection{The \textit{display} command}
+\paragraph{}
+This command is used to print the value of an expression each time the program stops. It's particularly useful for monitoring the value of variables or expressions as the program executes, providing a way to track changes in real-time.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=1.2\textwidth]{ss13.png}
+\caption{Setting a second breakpoint and running the program again. The \textit{display} command}
+\end{figure}
+
+Notice, that program stops at line $10$ in the function \textbf{f()} which is: \textbf{int *j=i;}. Notice the address stored in \textbf{j} which is displayed when we use the \textit{display} command(\textbf{j} stores some random address).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{ss14.png}
+\caption{\textbf{j} now stores the address of \textbf{i}}
+\end{figure}
+
+Since, we used the \textit{next} command, line $10$ got executed and the address of \textbf{i} got stored in \textbf{j} as can be seen from figure 14.
+
+\newpage
+Now,we will again run the \textbf{next} command and execute line $12$ which is \textbf{sophisticated(j);}.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{ss15.png}
+\caption{\textbf{sophisticated(j);} got executed}
+\end{figure}
+
+So, after executing line $12$, the execution stops at line $13$ which is \textbf{j=complicated(j);}. We can see that the address stored in \textbf{j} hasn't changed.
+
+So, we run the \textbf{next} command again:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{ss16.png}
+\caption{\textbf{j=complicated(j);} got executed}
+\end{figure}
+
+Now, we can see that line $13$ also got executed and execution stops at line $15$. Notice that now the address stored in \textbf{j} has changed to $0x0$ which means \textbf{NULL}.
+
+\newpage
+\subsection{The \textit{undisplay} command}
+\paragraph{}
+This is just the opposite of \textit{display} command.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{ss17.png}
+\caption{The \textit{undisplay} command}
+\end{figure}
+
+Notice that the value of \textbf{j} stopped displaying. Also, an important note: if the \textbf{undisplay} command is throwing a warning on this syntax:
+\begin{Verbatim}[frame=single]
+(gdb) undisplay j
+\end{Verbatim}
+
+In figure 17(at the very top), we can see \textbf{1: j=(int*) 0x0}. That $1$ on the left indicates the \textit{id} of the variable \textbf{j}. So, instead of using \textit{undisplay} with the variable name, we can use the command with the variable's id:
+
+\begin{Verbatim}[frame=single]
+(gdb) undisplay 1
+\end{Verbatim}
+
+\newpage
+\subsection{The \textit{backtrace} command}
+\paragraph{}
+When we run this command in gdb, it prints a list of function calls, along with the corresponding stack frames, showing the current execution context. It includes function names, line numbers and source file information.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{ss18.png}
+\caption{The \textit{backtrace} command}
+\end{figure}
+
+\newpage
+\subsection{More commands}
+\paragraph{}
+Consider the following program:
+\begin{Verbatim}[numbers=left, frame=single]
+#include<iostream>
+
+using namespace std;
+
+int factorial(int n) {
+        if(n==0)
+                return 1;
+
+        return n*factorial(n-1);
+}
+
+int main(void) {
+        int num, result;
+        cout<<"Enter an integer: ";
+        scanf("%d", &num);
+
+        if(num<0) {
+                cout<<"Number is negative!\n";
+        }
+
+        else {
+                result=factorial(num);
+                cout<<num<<"! = "<<result<<"\n";
+        }
+
+        return 0;
+}
+\end{Verbatim}
+
+We set a breakpoint at the function \textbf{factorial}.
+\begin{Verbatim}[frame=single]
+(gdb) break factorial
+\end{Verbatim}
+
+We will run the program:
+\begin{Verbatim}[frame=single]
+(gdb) run
+\end{Verbatim}
+
+\newpage
+Here is an the image showing what is done:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{ss19.png}
+\caption{Debugging a recursive program in gdb}
+\end{figure}
+
+\textbf{n} here is the abbreviated form of the \textbf{next} command.
+
+Now, if we use the \textbf{next} command again, then it won't step into the function call at line 9(as shown in figure $19$). It will just step over it. We want to step into this function call. For this we have the \textbf{step} command.
+
+\subsection{The \textit{step} command}
+\paragraph{}
+This command will go inside a function(unlike \textbf{next}) and execute that function line by line.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{ss20.png}
+\caption{The \textbf{step} command}
+\end{figure}
+
+Notice that the value of \textbf{n} is $3$. That means \textbf{step} command entered into the function call.
+But this process can get tedious with long recursive functions. We can't just type \textbf{step} everytime for executing each line in the function?
+
+We can make use of the breakpoint. We can tell gdb to run as many lines as it can until it reaches the next breakpoint.
+
+\newpage
+\subsection{The \textbf{continue} command}
+\paragraph{}
+This command is used to resume the execution of the program until the next breakpoint is encountered or until the program completes its execution. It allows the program to run continuously without stopping at every line or function call. It's quite similar to the \textbf{run} except that \textbf{continue} runs the program from wherever the execution stopped previously.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{ss21.png}
+\caption{The \textbf{continue} command}
+\end{figure}
+
+We can see that after using the \textbf{continue} command, the execution stopped right at the next breakpoint. Also, notice that the value of \textbf{n} is now $2$. \textbf{continue} command is abbreviated as \textbf{c}.
+So, we go on continuing with the \textbf{continue} command until we reach the breakpoint where \textbf{n} is $0$.
+
+\newpage
+\subsection{The \textit{finish} command}
+\paragraph{}
+This command is used to continue execution of the program until the current function is finished and control returns to the calling function. It allows us to finish the execution of the current function and stop at the first instruction of the calling function in the call stack.
+
+Now, from the last breakpoint(where \textbf{n} became $0$), we use the \textbf{finish} command.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{ss22.png}
+\caption{The \textit{finish} command}
+\end{figure}
+
+Notice the line \textbf{Run till exit from \#0}. The \textbf{\#0} is basically the stack frame number. In GDB, the stack frames are numbered. The \#0 is the currently executing function, \#1 is the calling function and so on. Basically \#0 is the top of the stack.
+
+Also, notice the \textbf{Value returned is} statement.
+\newpage
+Finally, we reach \textbf{result=factorial(n);} in the \textbf{main()} function where the result(the factorial of $4$) is stored.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{ss23.png}
+\caption{Using the \textit{backtrace} command to view the stack}
+\end{figure}
+
+From figure 23, we can see the call stack where the calls of \textbf{factorial()} are stored. We can see that \textbf{factorial()} was first called in the \textbf{main()} function at line $22$. Next, it was again called in line $9$(within its definition) all the way till stack frame \#1. Then in stack frame \#0 \textbf{factorial()} was called again with \textbf{n=$1$} and the execution stopped at the breakpoint.
+
+\newpage
+\subsection{The \textit{watch} command}
+\paragraph{}
+This command is used to set a watchpoint on a variable or an expression. A watchpoint is a debugging feature that causes the program to stop execution whenever the specified variable or expression is read or modified.
+
+Basic syntax:
+\begin{Verbatim}[frame=single]
+watch EXPRESSION
+\end{Verbatim}
+
+\begin{itemize}
+\item EXPRESSION $\rightarrow$ Any valid C/C++ expression, including variable names, array elements, or more complex expressions.
+\end{itemize}
+
+Consider the following program:
+\begin{Verbatim}[numbers=left, frame=single]
+#include<iostream>
+
+int main(void) {
+	int x=5;
+	int y=10;
+	int z=x+y;
+
+	printf("Initial values:\nx = %d\ny = %d\nz = %d\n", x, y, z);
+
+	x=20;
+	y=x*4;
+	z=x+10;
+
+	printf("Updated values:\nx = %d\ny = %d\nz = %d\n", x, y, z);
+	return 0;
+}
+\end{Verbatim}
+\newpage
+Let's say we want to keep track of the variable \textbf{x}.
+We will use the \textit{watch} command as:
+\begin{Verbatim}[frame=single]
+(gdb) watch x
+\end{Verbatim}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{ss24.png}
+\caption{Setting a watchpoint with the \textit{watch} command}
+\end{figure}
+
+Here we have created a watchpoint for the variable \textbf{x}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{ss25.png}
+\caption{Caught modification}
+\end{figure}
+
+As we continue executing the program, \textbf{watch} command lets us know the modified value of \textbf{x} by showing the old value and the new value. We can also see the the modification occurred inside the \textbf{main()} function.
+
+\newpage
+\subsection{The \textit{info} command}
+\paragraph{}
+This command provides information about various aspects of the program being debugged.
+
+To get information about breakpoints, we can use the following command:
+\begin{Verbatim}[frame=single]
+(gdb) info breakpoints
+\end{Verbatim}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{ss26.png}
+\caption{\textit{info} command}
+\end{figure}
+
+Notice that each breakpoint has an \textbf{id} associated with it(look at the \textbf{Num} column in figure 26).
+
+\newpage
+\subsection{The \textit{delete} command}
+\paragraph{}
+This command is used to delete breakpoints or watchpoints that have been set during the debugging session. It allows us to remove specific breakpoints, all breakpoints or even breakpoints at a specific location.
+
+To delete a breakpoint, we use the breakpoint's id along with the \textbf{delete} command.
+
+\begin{Verbatim}[frame=single]
+(gdb) delete 1
+\end{Verbatim}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{ss27.png}
+\caption{Deleting a breakpoint}
+\end{figure}
+
+To confirm that a breakpoint has been removed/deleted, we use the \textbf{info breakpoints} command to check it. We deleted our watchpoint(figure 27).
+
+To delete all breakpoints and watchpoints, just use the \textbf{delete} command alone.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{ss28.png}
+\caption{\textit{delete} command alone}
+\end{figure}
+
+\newpage
+\subsection{The \textit{whatis} command}
+\paragraph{}
+This command is used to display the data type of a symbol, variable, or expression in the program being debugged. It provides information about the type of the specified identifier without evaluating or executing any code.
+
+Consider the program in the \textbf{\hyperref[sec:GDB]{first}} section.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{ss29.png}
+\caption{The \textit{whatis} command}
+\end{figure}
+
+We can see that the \textbf{whatis} command gives the type of the variable \textbf{j}.
+Alternately, we can also use the \textbf{what} command.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{ss30.png}
+\caption{The \textit{what} command}
+\end{figure}
+
+\newpage
+\section{Advanced commands}
+\subsection{Reverse debugging}
+Reverse debugging is a feature in the GNU Debugger(GDB) that allows developers to step backward through the execution of a program, effectively rewinding the debugging session.
+
+This capability is valuable for understanding the cause of a bug or error by allowing us to trace the execution history leading up to the issue.
+
+\subsection{A program}\label{sec:program}
+\begin{Verbatim}[numbers=left, frame=single]
+#include "black_box.h"
+#include "fun.h"
+
+int main(void) {
+        int x=16;
+
+        mystery(x, 1);
+        if(x%2)
+                fun(x);
+        else
+                funner(x);
+
+        return 0;
+}
+\end{Verbatim}
+
+The output of this program is:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{output.png}
+\caption{Output of \textbf{main5.cpp}}
+\end{figure}
+
+\newpage
+\subsubsection{The \textit{target record-full} command}
+\paragraph{}
+This command is used to enable the \textbf{record and replay} feature. This feature allows GDB to record the entire execution of a program, including all inputs and non-deterministic events, and then replay it later for analysis or debugging.
+Section \hyperref[sec:program]{\textbf{A program}} shows us a program which performs some operations on a variable \textbf{x}.
+
+Here are the definitions of the functions \textbf{mystery(), fun() and funner()}:
+
+
+\vspace{20pt}
+\textbf{mystery()}
+\begin{Verbatim}[numbers=left, frame=single]
+#include<iostream>
+
+void mystery(int& x, int incr) {
+        x+=incr;
+}
+\end{Verbatim}
+
+\vspace{20pt}
+\textbf{fun() and funner()}
+\begin{Verbatim}[numbers=left, frame=single]
+#include<iostream>
+
+using namespace std;
+
+void fun(int x) {
+        for(int i=0; i<(x/2)+1; i++)
+                cout<<"Odd\n";
+        cout<<"ODD!!\n";
+}
+
+void funner(int x) {
+        for(int i=0; i<(x/2); i++)
+                cout<<"Even\n";
+        cout<<"EVEN!!\n";
+}
+\end{Verbatim}
+
+We begin with the command:
+
+\begin{Verbatim}[frame=single]
+(gdb) target record-full
+\end{Verbatim}
+\newpage
+After executing this command, it seems like nothing has happened:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{ss31.png}
+\caption{The \textit{target record-full} command}
+\end{figure}
+
+Now, we can use commands like \textbf{reverse-next} to go back a step in the program execution like so:
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=1.3\textwidth]{ss32.png}
+\caption{The \textit{reverse-next} command}
+\end{figure}
+
+As seen from figure, gdb completed execution till \textbf{mystery(x, 1);} and stopped at line \textbf{if(x\%2)}. When we used the \textbf{reverse-next} command, the execution went one step backwards to line \textbf{mystery(x, 1);}. With the reversal of execution, the values of variables also get restored if they were modified.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{ss33.png}
+\caption{Value of \textbf{x} restored}
+\end{figure}
+
+We can see that when the execution reversed back by one step to \textbf{mystery(x, 1);}, the value of \textbf{x} also got restored.
+
+\newpage
+To prove that it really worked:
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{ss34.png}
+\caption{Notice the values of \textbf{x}}
+\end{figure}
+
+\textbf{NOTE:} \textbf{print} command is abbreviated as \textbf{p}. \textbf{reverse-next} is abbreviated as \textbf{rn}.
+
+\subsubsection{The \textit{set var} command}
+\paragraph{}
+This command is used to change the value of a variable during a debugging session i.e. while GDB is debugging a program.
+\newpage
+Now, we will set the value of \textbf{x} to a different value.
+
+\begin{Verbatim}[frame=single]
+(gdb) set var x=15
+\end{Verbatim}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{ss35.png}
+\caption{Changing the value of \textbf{x} to see how the output changes}
+\end{figure}
+
+From the figure above, we can see that the execution stopped at the line \textbf{mystery(x, 1);}. This function basically increments \textbf{x} by $1$. So before this line got executed we set the value of \textbf{x} to $15$. Then when we used the \textbf{continue} command and hence we get the output.
+\end{document}
